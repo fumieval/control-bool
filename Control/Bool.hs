@@ -6,7 +6,7 @@
 --
 -- Maintainer  :  Fumiaki Kinoshita <fumiexcel@gmail.com>
 -- Stability   :  experimental
--- Portability :  non-portable
+-- Portability :  portable
 --
 -- Useful combinators for boolean expressions
 ----------------------------------------------------------------------------
@@ -14,6 +14,7 @@
 module Control.Bool (
 -- * A pure combinator
 bool
+, ifThenElse
 -- * Applicative combinators
 , notF
 , (<||>)
@@ -38,11 +39,16 @@ import Data.Monoid
 infixr 3 <&&>, <&=>
 infixr 2 <||>, <|=>
 
--- | Return its second argument if the boolean value is 'True', otherwise return first.
+-- | @bool a b@ is a function that returns a if the argument is True, otherwise returns 'b'.
 bool :: a -> a -> Bool -> a
 bool x _ False = x
 bool _ y True = y
 {-# INLINE bool #-}
+
+-- | An argument-permuted equivalent of 'bool'.
+ifThenElse :: Bool -> a -> a -> a
+ifThenElse True x _ = x
+ifThenElse False _ y = y
 
 -- | A lifted 'not'.
 notF :: Functor f => f Bool -> f Bool
@@ -59,11 +65,11 @@ notM = liftM not
 (<&&>) = liftA2 (&&)
 {-# INLINE (<&&>) #-}
 
--- | A lifted ('&&'), but it doesn't run the second argument if the first returns False.
+-- | A lifted ('&&'), but short-circuited.
 (<&=>) :: Monad m => m Bool -> m Bool -> m Bool
 m <&=> n = do
     r <- m
-    if r then n else return False
+    bool (return False) n r
 {-# INLINE (<&=>) #-}
 
 -- | A lifted ('||').
@@ -71,11 +77,11 @@ m <&=> n = do
 (<||>) = liftA2 (||)
 {-# INLINE (<||>) #-}
 
--- | A lifted ('||'), but it doesn't run the second argument if the first returns True.
+-- | A lifted ('||'), but short-circuited.
 (<|=>) :: Monad m => m Bool -> m Bool -> m Bool
 m <|=> n = do
     r <- m
-    if r then return True else n
+    bool n (return True) r
 {-# INLINE (<|=>) #-}
 
 -- | Run the action if the given monadic condition becomes 'True'.
@@ -94,7 +100,7 @@ ifThenElseM mp m n = do
     if r then m else n
 {-# INLINE ifThenElseM #-}
 
--- | 'guard'' b returns the second argument if b is True, otherwise becomes 'mzero'.
+-- | 'guard'' b a returns a if b is True, otherwise becomes 'mzero'.
 guard' :: MonadPlus m => Bool -> a -> m a
 guard' b a = bool mzero (return a) b
 {-# INLINE guard' #-}
