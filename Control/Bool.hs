@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Control.Bool
--- Copyright   :  (C) 2013 Fumiaki Kinoshita
+-- Copyright   :  (C) 2013-2014 Fumiaki Kinoshita
 -- License     :  BSD-style (see the file LICENSE)
 --
 -- Maintainer  :  Fumiaki Kinoshita <fumiexcel@gmail.com>
@@ -39,7 +39,7 @@ import Data.Monoid
 infixr 3 <&&>, <&=>
 infixr 2 <||>, <|=>
 
--- | @bool a b@ is a function that returns a if the argument is True, otherwise returns 'b'.
+-- | @bool a b@ is a function that returns b if the argument is True, otherwise returns 'a'.
 bool :: a -> a -> Bool -> a
 bool x _ False = x
 bool _ y True = y
